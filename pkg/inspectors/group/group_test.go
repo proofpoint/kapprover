@@ -3,7 +3,7 @@ package group_test
 import (
 	"github.com/coreos/kapprover/pkg/inspectors"
 	"k8s.io/client-go/kubernetes"
-	certificates "k8s.io/client-go/pkg/apis/certificates/v1alpha1"
+	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 	"testing"
 
 	_ "github.com/coreos/kapprover/pkg/inspectors/group"
