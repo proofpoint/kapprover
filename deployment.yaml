@@ -1,22 +1,24 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: kubelet-approver
+  name: tls-approver
   namespace: kube-system
   labels:
-    k8s-app: kubelet-approver
+    k8s-app: tls-approver
 spec:
   replicas: 1
   template:
     metadata:
-      name: kubelet-approver
+      name: tls-approver
       labels:
-        k8s-app: kubelet-approver
+        k8s-app: tls-approver
     spec:
       containers:
-      - name: kubelet-approver
+      - name: tls-approver
         imagePullPolicy: IfNotPresent
-        image: quay.io/coreos/kapprover:latest
+        image: repo.lab.ppops.net/dev-docker-local/kapprover:latest
+        args:
+          - -filter=group=system:serviceaccounts
         resources:
           requests:
             cpu: 100m
