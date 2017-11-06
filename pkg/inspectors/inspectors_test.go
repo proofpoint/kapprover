@@ -1,11 +1,11 @@
 package inspectors_test
 
 import (
-	"github.com/coreos/kapprover/pkg/inspectors"
+	"github.com/proofpoint/kapprover/pkg/inspectors"
 	"testing"
 
-	_ "github.com/coreos/kapprover/pkg/inspectors/group"
-	_ "github.com/coreos/kapprover/pkg/inspectors/username"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 )
 
 func TestInspectors(t *testing.T) {

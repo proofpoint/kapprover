@@ -15,9 +15,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/coreos/kapprover/pkg/inspectors"
-	_ "github.com/coreos/kapprover/pkg/inspectors/group"
-	_ "github.com/coreos/kapprover/pkg/inspectors/username"
+	"github.com/proofpoint/kapprover/pkg/inspectors"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 )
 
 var (

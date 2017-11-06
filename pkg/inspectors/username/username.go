@@ -2,7 +2,7 @@ package username
 
 import (
 	"fmt"
-	"github.com/coreos/kapprover/pkg/inspectors"
+	"github.com/proofpoint/kapprover/pkg/inspectors"
 	"k8s.io/client-go/kubernetes"
 	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 )
