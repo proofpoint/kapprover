@@ -5,6 +5,7 @@ install:
 - curl https://glide.sh/get | sh
 
 script:
+- glide install
 - go test $(glide novendor)
 
 notifications:
