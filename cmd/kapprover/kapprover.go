@@ -119,6 +119,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 				return err
 			}
 			if message != "" {
+				log.Infof("Skipping %q: %s", request.Name, message)
 				return nil
 			}
 		}
@@ -146,7 +147,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 			for _, warner := range warners {
 				message, _ := warner.Inspector.Inspect(client, request)
 				if message != "" {
-					log.Warnf("Approving CSR from %s despite %s: %s", request.Spec.Username, warner.Name, message)
+					log.Warnf("Approving CSR %q from %q despite %s: %s", request.Name, request.Spec.Username, warner.Name, message)
 				}
 			}
 		}
@@ -169,7 +170,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 			return err
 		}
 
-		log.Infof("Successfully approved %q", request.ObjectMeta.Name)
+		log.Infof("Successfully %s %q", condition.Type, request.ObjectMeta.Name)
 
 		return nil
 	}
