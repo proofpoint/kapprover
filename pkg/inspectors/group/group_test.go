@@ -2,6 +2,8 @@ package group_test
 
 import (
 	"github.com/proofpoint/kapprover/pkg/inspectors"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes"
 	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 	"testing"
@@ -29,14 +31,10 @@ func TestInspect(t *testing.T) {
 
 func TestInspectConfigured(t *testing.T) {
 	inspector, exists := inspectors.Get("group")
-	if !exists {
-		t.Fatal("Expected inspectors.Get(\"group\") to exist, did not")
-	}
+	require.True(t, exists, "inspectors.Get(\"group\") to exist")
 
 	err := inspector.Configure("system:serviceaccount")
-	if err != nil {
-		t.Errorf("Expected Configure to not fail, got %s", err)
-	}
+	assert.NoError(t, err, "Configure")
 
 	for group, expectedMessage := range map[string]string{
 		"system:serviceaccount":    "",
@@ -57,10 +55,6 @@ func assertInspectionResult(t *testing.T, inspector inspectors.Inspector, group 
 		},
 	}
 	message, err := inspector.Inspect(client, &request)
-	if message != expectedMessage {
-		t.Errorf("Username %s: expected %q, got %q", group, expectedMessage, message)
-	}
-	if err != nil {
-		t.Errorf("Username %s: expected nil error, got %s", group, err)
-	}
+	assert.Equal(t, expectedMessage, message, "Group", group)
+	assert.NoError(t, err, "Group", group)
 }
