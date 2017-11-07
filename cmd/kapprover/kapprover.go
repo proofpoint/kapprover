@@ -58,7 +58,7 @@ func main() {
 	f := func(obj interface{}) {
 		if req, ok := obj.(*certificates.CertificateSigningRequest); ok {
 			if err := tryApprove(filters, deniers, warners, client, req); err != nil {
-				log.Errorf("Failed to approve %q: %s", req.ObjectMeta.Name, err)
+				log.Errorf("Failed to approve %q from %q: %s", req.ObjectMeta.Name, req.Spec.Username, err)
 				return
 			}
 		}
@@ -119,7 +119,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 				return err
 			}
 			if message != "" {
-				log.Infof("Skipping %q: %s", request.Name, message)
+				log.Infof("Skipping %q from %q: %s", request.Name, request.Spec.Username, message)
 				return nil
 			}
 		}
@@ -170,7 +170,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 			return err
 		}
 
-		log.Infof("Successfully %s %q", condition.Type, request.ObjectMeta.Name)
+		log.Infof("Successfully %s %q from %q", condition.Type, request.ObjectMeta.Name, request.Spec.Username)
 
 		return nil
 	}

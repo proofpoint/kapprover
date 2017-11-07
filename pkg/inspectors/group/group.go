@@ -33,7 +33,7 @@ func (g *group) Inspect(client *kubernetes.Clientset, request *certificates.Cert
 		}
 	}
 	if !isRequiredGroup {
-		return fmt.Sprintf("Requesting user %s is not in the %s group", request.Spec.Username, g.requiredGroup), nil
+		return fmt.Sprintf("Requesting user is not in the %s group", g.requiredGroup), nil
 	}
 
 	return "", nil

@@ -21,7 +21,7 @@ func TestInspect(t *testing.T) {
 
 	for username, expectedMessage := range map[string]string{
 		"kubelet-bootstrap": "",
-		"someone-else":      "Requesting user someone-else is not kubelet-bootstrap",
+		"someone-else":      "Requesting user is not kubelet-bootstrap",
 	} {
 		assertInspectionResult(t, inspector, username, expectedMessage)
 	}
@@ -40,7 +40,7 @@ func TestInspectConfigured(t *testing.T) {
 
 	for username, expectedMessage := range map[string]string{
 		"some-user":         "",
-		"kubelet-bootstrap": "Requesting user kubelet-bootstrap is not some-user",
+		"kubelet-bootstrap": "Requesting user is not some-user",
 	} {
 		assertInspectionResult(t, inspector, username, expectedMessage)
 	}
