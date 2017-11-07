@@ -21,7 +21,7 @@ func TestInspect(t *testing.T) {
 
 	for group, expectedMessage := range map[string]string{
 		"system:kubelet-bootstrap": "",
-		"someOtherGroup":           "Requesting user someRandomUser is not in the system:kubelet-bootstrap group",
+		"someOtherGroup":           "Requesting user is not in the system:kubelet-bootstrap group",
 	} {
 		assertInspectionResult(t, inspector, group, expectedMessage)
 	}
@@ -40,7 +40,7 @@ func TestInspectConfigured(t *testing.T) {
 
 	for group, expectedMessage := range map[string]string{
 		"system:serviceaccount":    "",
-		"system:kubelet-bootstrap": "Requesting user someRandomUser is not in the system:serviceaccount group",
+		"system:kubelet-bootstrap": "Requesting user is not in the system:serviceaccount group",
 	} {
 		assertInspectionResult(t, inspector, group, expectedMessage)
 	}

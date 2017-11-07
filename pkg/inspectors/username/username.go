@@ -26,7 +26,7 @@ func (u *username) Configure(config string) error {
 
 func (u *username) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
 	if request.Spec.Username != u.requiredUsername {
-		return fmt.Sprintf("Requesting user %s is not %s", request.Spec.Username, u.requiredUsername), nil
+		return fmt.Sprintf("Requesting user is not %s", u.requiredUsername), nil
 	}
 
 	return "", nil
