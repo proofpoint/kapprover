@@ -1,5 +1,5 @@
-hash: 86011352b103a949ef3f761ddfdb4e19e65abce404c1aa4b1df4177e15408c19
-updated: 2017-11-07T11:48:31.389827545-08:00
+hash: 3d74a65be1267262c2ff688dbad4036ebd42c1421f0347b1cc142d926d727efa
+updated: 2017-11-10T13:20:27.041054865-08:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
@@ -65,6 +65,9 @@ imports:
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/stretchr/testify
   version: 2aa2c176b9dab406a6970f6a55f513e8a8c8b18f
+  subpackages:
+  - assert
+  - require
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -226,4 +229,8 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
-testImports: []
+testImports:
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
