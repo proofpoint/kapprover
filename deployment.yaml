@@ -22,6 +22,7 @@ spec:
           - -denier=signaturealgorithm=SHA256WithRSA,SHA384WithRSA,SHA512WithRSA,SHA256WithRSAPSS,SHA384WithRSAPSS,SHA512WithRSAPSS
           - -denier=minrsakeysize=3072
           - -denier=noextensions
+          - -denier=keyusage=digital_signature,key_encipherment,server_auth,client_auth
         resources:
           requests:
             cpu: 100m
