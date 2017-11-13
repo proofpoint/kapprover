@@ -15,7 +15,9 @@ func init() {
 	inspectors.Register("minrsakeysize", &minrsakeysize{3072})
 }
 
-// Minkeysize is an Inspector that verifies the CSR has a private key of at least a configured size.
+// Minkeysize is an Inspector that verifies that the CSR either has a non-RSA public key or has an
+// RSA public key of at least a configured minimum size. If you want to restrict public keys, use
+// the signaturealgorithm Inspector.
 type minrsakeysize struct {
 	minSize int
 }

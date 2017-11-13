@@ -19,6 +19,7 @@ spec:
         image: repo.lab.ppops.net/dev-docker-local/kapprover:latest
         args:
           - -filter=group=system:serviceaccounts
+          - -denier=signaturealgorithm=SHA256WithRSA,SHA384WithRSA,SHA512WithRSA,SHA256WithRSAPSS,SHA384WithRSAPSS,SHA512WithRSAPSS
           - -denier=minrsakeysize=3072
         resources:
           requests:
