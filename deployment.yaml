@@ -21,6 +21,7 @@ spec:
           - -filter=group=system:serviceaccounts
           - -denier=signaturealgorithm=SHA256WithRSA,SHA384WithRSA,SHA512WithRSA,SHA256WithRSAPSS,SHA384WithRSAPSS,SHA512WithRSAPSS
           - -denier=minrsakeysize=3072
+          - -denier=noextensions
         resources:
           requests:
             cpu: 100m
