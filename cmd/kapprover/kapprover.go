@@ -17,8 +17,9 @@ import (
 
 	"github.com/proofpoint/kapprover/pkg/inspectors"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/minrsakeysize"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 )
 
 var (
