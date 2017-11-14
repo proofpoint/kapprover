@@ -143,7 +143,7 @@ func assertInspectionResult(t *testing.T, inspector inspectors.Inspector, signat
 		if !expectAllow {
 			expectedMessage = fmt.Sprintf("SignatureAlgorithm is %s", signatureAlgorithm)
 		}
-		assert.Equal(t, expectedMessage, message, "SignatureAlgorithm", signatureAlgorithm)
-		assert.NoError(t, err, "SignatureAlgorithm", signatureAlgorithm)
+		assert.Equal(t, expectedMessage, message, "SignatureAlgorithm %s", signatureAlgorithm)
+		assert.NoError(t, err, "SignatureAlgorithm %s", signatureAlgorithm)
 	})
 }
