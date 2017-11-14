@@ -93,8 +93,8 @@ func TestInspectNotRsa(t *testing.T) {
 			},
 		}
 		message, err := inspector.Inspect(client, &request)
-		assert.Equal(t, "", message, "Keytype", alg)
-		assert.NoError(t, err, "Keytype", alg)
+		assert.Equal(t, "", message, "Keytype %s", alg)
+		assert.NoError(t, err, "Keytype %s", alg)
 	}
 }
 
@@ -123,6 +123,6 @@ func assertInspectionResult(t *testing.T, inspector inspectors.Inspector, keysiz
 		},
 	}
 	message, err := inspector.Inspect(client, &request)
-	assert.Equal(t, expectedMessage, message, "Keysize", keysize)
-	assert.NoError(t, err, "Keysize", keysize)
+	assert.Equal(t, expectedMessage, message, "Keysize %s", keysize)
+	assert.NoError(t, err, "Keysize %s", keysize)
 }

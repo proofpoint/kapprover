@@ -55,6 +55,6 @@ func assertInspectionResult(t *testing.T, inspector inspectors.Inspector, userna
 		},
 	}
 	message, err := inspector.Inspect(client, &request)
-	assert.Equal(t, expectedMessage, message, "Username", username)
-	assert.NoError(t, err, "Username", username)
+	assert.Equal(t, expectedMessage, message, "Username %s", username)
+	assert.NoError(t, err, "Username %s", username)
 }

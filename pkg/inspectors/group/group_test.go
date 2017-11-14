@@ -55,6 +55,6 @@ func assertInspectionResult(t *testing.T, inspector inspectors.Inspector, group 
 		},
 	}
 	message, err := inspector.Inspect(client, &request)
-	assert.Equal(t, expectedMessage, message, "Group", group)
-	assert.NoError(t, err, "Group", group)
+	assert.Equal(t, expectedMessage, message, "Group %s", group)
+	assert.NoError(t, err, "Group %s", group)
 }
