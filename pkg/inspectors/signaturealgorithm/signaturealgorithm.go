@@ -22,8 +22,8 @@ func init() {
 	}})
 }
 
-// Minkeysize is an Inspector that verifies that the CSR either has a non-RSA public key or has an
-// RSA public key of at least a configured minimum size.
+// SignatureAlgorithm is an Inspector that verifies that the CSR's signature algorithm is in a permitted set.
+// As the signature algorithm constrains the key type, it also verifies the public key type is in a permitted set.
 type signaturealgorithm struct {
 	permittedAlgorithms map[x509.SignatureAlgorithm]bool
 }
