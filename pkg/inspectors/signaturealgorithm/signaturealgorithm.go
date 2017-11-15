@@ -58,7 +58,7 @@ func (s *signaturealgorithm) Configure(config string) error {
 	return nil
 }
 
-func (s *signaturealgorithm) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
+func (s *signaturealgorithm) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
 	certificateRequest, msg := csr.Extract(request.Spec.Request)
 	if msg != "" {
 		return msg, nil

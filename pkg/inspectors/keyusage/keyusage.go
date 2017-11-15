@@ -63,7 +63,7 @@ func (k *keyusage) Configure(config string) error {
 	return nil
 }
 
-func (k *keyusage) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
+func (k *keyusage) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
 	badUsages := ""
 	sep := ""
 	for _, keyUsage := range request.Spec.Usages {

@@ -24,7 +24,7 @@ func (g *group) Configure(config string) error {
 	return nil
 }
 
-func (g *group) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
+func (g *group) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
 	isRequiredGroup := false
 	for _, group := range request.Spec.Groups {
 		if group == g.requiredGroup {
