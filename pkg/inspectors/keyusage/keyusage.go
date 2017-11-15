@@ -18,8 +18,7 @@ func init() {
 	}})
 }
 
-// Minkeysize is an Inspector that verifies that the CSR either has a non-RSA public key or has an
-// RSA public key of at least a configured minimum size.
+// Keyusage is an Inspector that verifies that all of the requested key usages are permitted.
 type keyusage struct {
 	permittedKeyUsages map[certificates.KeyUsage]bool
 }
