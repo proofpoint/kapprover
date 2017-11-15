@@ -21,7 +21,7 @@ var (
 // to take adverse action, or an error to temporarily fail.
 type Inspector interface {
 	Configure(string) error
-	Inspect(*kubernetes.Clientset, *certificates.CertificateSigningRequest) (message string, err error)
+	Inspect(kubernetes.Interface, *certificates.CertificateSigningRequest) (message string, err error)
 }
 
 type NamedInspector struct {

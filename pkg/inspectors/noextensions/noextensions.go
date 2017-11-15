@@ -23,7 +23,7 @@ func (n *noextensions) Configure(config string) error {
 	return nil
 }
 
-func (n *noextensions) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
+func (n *noextensions) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
 	certificateRequest, msg := csr.Extract(request.Spec.Request)
 	if msg != "" {
 		return msg, nil

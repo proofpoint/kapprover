@@ -33,7 +33,7 @@ func (m *minrsakeysize) Configure(config string) error {
 	return nil
 }
 
-func (m *minrsakeysize) Inspect(client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) (string, error) {
+func (m *minrsakeysize) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
 	certificateRequest, msg := csr.Extract(request.Spec.Request)
 	if msg != "" {
 		return msg, nil
