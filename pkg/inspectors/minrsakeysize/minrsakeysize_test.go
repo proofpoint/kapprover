@@ -9,8 +9,8 @@ import (
 	"github.com/proofpoint/kapprover/pkg/inspectors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	certificates "k8s.io/api/certificates/v1beta1"
 	"k8s.io/client-go/kubernetes"
-	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 	"testing"
 
 	"crypto/dsa"

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/proofpoint/kapprover/pkg/csr"
 	"github.com/proofpoint/kapprover/pkg/inspectors"
+	certificates "k8s.io/api/certificates/v1beta1"
 	"k8s.io/client-go/kubernetes"
-	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 )
 
 func init() {

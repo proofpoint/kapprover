@@ -6,11 +6,11 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	certificates "k8s.io/api/certificates/v1beta1"
+	"k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
-	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -53,7 +53,7 @@ func main() {
 	// Create a watcher and an informer for CertificateSigningRequests.
 	// The Add function
 	watchList := cache.NewListWatchFromClient(
-		client.CertificatesV1beta1Client.RESTClient(),
+		client.CertificatesV1beta1().RESTClient(),
 		"certificatesigningrequests",
 		v1.NamespaceAll,
 		fields.Everything(),
@@ -159,7 +159,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		request.Status.Conditions = append(request.Status.Conditions, condition)
 
 		// Submit the updated CSR.
-		signingRequestInterface := client.CertificatesV1beta1Client.CertificateSigningRequests()
+		signingRequestInterface := client.CertificatesV1beta1().CertificateSigningRequests()
 		if _, err := signingRequestInterface.UpdateApproval(request); err != nil {
 			if strings.Contains(err.Error(), "the object has been modified") {
 				// The CSR might have been updated by a third-party, retry until we
