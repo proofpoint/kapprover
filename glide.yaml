@@ -7,12 +7,12 @@ import:
   - pkg/apis/meta/v1
   - pkg/fields
 - package: k8s.io/client-go
-  version: v4.0.0
+  version: v5.0.1
   subpackages:
   - kubernetes
   - kubernetes/typed/certificates/v1beta1
-  - pkg/api/v1
-  - pkg/apis/certificates
+  - api/v1
+  - api/certificates
   - rest
   - tools/cache
   - tools/clientcmd
