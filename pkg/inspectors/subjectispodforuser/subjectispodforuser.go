@@ -7,8 +7,6 @@ import (
 	certificates "k8s.io/api/certificates/v1beta1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -34,31 +32,10 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 		return msg, nil
 	}
 
-	if len(certificateRequest.Subject.Names) > 1 {
-		return "Subject has more than one name component", nil
+	podIp, namespace, msg := csr.GetPodIpAndNamespace(s.clusterDomain, certificateRequest)
+	if msg != "" {
+		return msg, nil
 	}
-
-	if !strings.HasSuffix(certificateRequest.Subject.CommonName, ".pod."+s.clusterDomain) {
-		return fmt.Sprintf("Subject %q is not in the pod.%s domain", certificateRequest.Subject.CommonName, s.clusterDomain), nil
-	}
-
-	splitName := strings.Split(strings.TrimSuffix(certificateRequest.Subject.CommonName, ".pod."+s.clusterDomain), ".")
-	if len(splitName) != 2 {
-		return fmt.Sprintf("Subject %q is not a POD-format name", certificateRequest.Subject.CommonName), nil
-	}
-
-	namespace := splitName[1]
-	splitIp := strings.Split(splitName[0], "-")
-	if len(splitIp) != 4 {
-		return fmt.Sprintf("Subject %q is not a POD-format name", certificateRequest.Subject.CommonName), nil
-	}
-	for _, byteStr := range splitIp {
-		val, err := strconv.ParseUint(byteStr, 10, 8)
-		if err != nil || (val == 0 && byteStr != "0") || (byteStr[0] == '0' && val != 0) {
-			return fmt.Sprintf("Subject %q is not a POD-format name", certificateRequest.Subject.CommonName), nil
-		}
-	}
-	podIp := strings.Join(splitIp, ".")
 
 	podList, err := client.CoreV1().Pods(namespace).List(metaV1.ListOptions{FieldSelector: "status.podIp=" + podIp})
 	if err != nil {
