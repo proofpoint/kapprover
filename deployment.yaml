@@ -23,6 +23,7 @@ spec:
           - -denier=minrsakeysize=3072
           - -denier=noextensions
           - -denier=keyusage=digital_signature,key_encipherment,server_auth,client_auth
+          - -denier=subjectispodforuser
         resources:
           requests:
             cpu: 100m
