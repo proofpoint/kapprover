@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/proofpoint/kapprover/pkg/inspectors"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/altnamesforpod"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/keyusage"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/minrsakeysize"
