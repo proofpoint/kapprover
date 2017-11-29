@@ -24,6 +24,7 @@ import (
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/subjectispodforuser"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
+	"fmt"
 )
 
 var (
@@ -173,7 +174,12 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 			return err
 		}
 
-		log.Infof("Successfully %s %q from %q", condition.Type, request.ObjectMeta.Name, request.Spec.Username)
+		detail := ""
+		if condition.Type == certificates.CertificateDenied {
+			detail = fmt.Sprintf(" by %s with %q", condition.Reason, condition.Message)
+		}
+
+		log.Infof("Successfully %s %q from %q%s", condition.Type, request.ObjectMeta.Name, request.Spec.Username, detail)
 
 		return nil
 	}
