@@ -49,29 +49,28 @@ func (inspectors *Inspectors) String() string {
 }
 
 func (inspectors *Inspectors) Set(value string) error {
-	for _, nameAndConfig := range strings.Split(value, ",") {
-		split := strings.SplitN(nameAndConfig, "=", 2)
-		name := split[0]
-		inspector, exists := Get(name)
-		if !exists {
-			return errors.New(fmt.Sprintf(
-				"Could not find inspector %q, registered approvers: %s",
-				name,
-				strings.Join(List(), ","),
-			))
-		}
-		var config string
-		if len(split) > 1 {
-			config = split[1]
-		}
-		if config != "" {
-			err := inspector.Configure(split[1])
-			if err != nil {
-				return err
-			}
-		}
-		*inspectors = append(*inspectors, NamedInspector{Name: name, Config: config, Inspector: inspector})
+	split := strings.SplitN(value, "=", 2)
+	name := split[0]
+	inspector, exists := Get(name)
+	if !exists {
+		return errors.New(fmt.Sprintf(
+			"Could not find inspector %q, registered approvers: %s",
+			name,
+			strings.Join(List(), ","),
+		))
 	}
+	var config string
+	if len(split) > 1 {
+		config = split[1]
+	}
+	if config != "" {
+		err := inspector.Configure(split[1])
+		if err != nil {
+			return err
+		}
+	}
+	*inspectors = append(*inspectors, NamedInspector{Name: name, Config: config, Inspector: inspector})
+
 	return nil
 }
 

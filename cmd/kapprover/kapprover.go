@@ -34,9 +34,9 @@ var (
 )
 
 func init() {
-	flag.Var(&filters, "filter", "comma-separated list of inspectors to filter the set of requests to handle")
-	flag.Var(&deniers, "denier", "comma-separated list of inspectors to deny requests")
-	flag.Var(&warners, "warner", "comma-separated list of inspectors to log warnings (but not block approval)")
+	flag.Var(&filters, "filter", "additional inspector to filter the set of requests to handle")
+	flag.Var(&deniers, "denier", "additional inspector to deny requests")
+	flag.Var(&warners, "warner", "additional inspector to log warnings (but not block approval)")
 }
 
 func main() {
