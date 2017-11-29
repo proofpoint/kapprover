@@ -37,7 +37,7 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 		return msg, nil
 	}
 
-	podList, err := client.CoreV1().Pods(namespace).List(metaV1.ListOptions{FieldSelector: "status.podIp=" + podIp})
+	podList, err := client.CoreV1().Pods(namespace).List(metaV1.ListOptions{FieldSelector: "status.podIP=" + podIp})
 	if err != nil {
 		return "", err
 	}

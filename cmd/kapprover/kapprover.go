@@ -62,7 +62,7 @@ func main() {
 	f := func(obj interface{}) {
 		if req, ok := obj.(*certificates.CertificateSigningRequest); ok {
 			if err := tryApprove(filters, deniers, warners, client, req); err != nil {
-				log.Errorf("Failed to approve %q from %q: %s", req.ObjectMeta.Name, req.Spec.Username, err)
+				log.Errorf("Failed to handle %q from %q: %s", req.ObjectMeta.Name, req.Spec.Username, err)
 				return
 			}
 		}
