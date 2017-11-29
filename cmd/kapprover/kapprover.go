@@ -41,9 +41,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if len(filters) == 0 {
-		filters.Set("username,group")
-	}
 
 	// Create a Kubernetes client.
 	client, err := newClient(*kubeconfigPath)
