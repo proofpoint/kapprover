@@ -44,18 +44,19 @@ var supportedAlgorithms = map[string]x509.SignatureAlgorithm{
 	"sha512withrsapss": x509.SHA512WithRSAPSS,
 }
 
-func (s *signaturealgorithm) Configure(config string) error {
+func (s *signaturealgorithm) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		s.permittedAlgorithms = map[x509.SignatureAlgorithm]bool{}
+		ret := signaturealgorithm{permittedAlgorithms: map[x509.SignatureAlgorithm]bool{}}
 		for _, signatureAlgorithm := range strings.Split(config, ",") {
 			algorithm, ok := supportedAlgorithms[strings.ToLower(signatureAlgorithm)]
 			if !ok {
-				return errors.New(fmt.Sprintf("unsupported SignatureAlgorithm %s", signatureAlgorithm))
+				return nil, errors.New(fmt.Sprintf("unsupported SignatureAlgorithm %s", signatureAlgorithm))
 			}
-			s.permittedAlgorithms[algorithm] = true
+			ret.permittedAlgorithms[algorithm] = true
 		}
+		return &ret, nil
 	}
-	return nil
+	return s, nil
 }
 
 func (s *signaturealgorithm) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {

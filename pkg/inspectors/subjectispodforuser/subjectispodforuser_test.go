@@ -182,7 +182,8 @@ func TestInspect(t *testing.T) {
 			}
 
 			if testcase.inspectorConfig != "" {
-				err := inspector.Configure(testcase.inspectorConfig)
+				var err error
+				inspector, err = inspector.Configure(testcase.inspectorConfig)
 				assert.NoError(t, err, "Configure")
 			}
 

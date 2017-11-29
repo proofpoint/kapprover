@@ -16,11 +16,11 @@ func init() {
 type noextensions struct {
 }
 
-func (n *noextensions) Configure(config string) error {
+func (n *noextensions) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		return errors.New("configuration not supported")
+		return nil, errors.New("configuration not supported")
 	}
-	return nil
+	return n, nil
 }
 
 func (n *noextensions) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {

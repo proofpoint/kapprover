@@ -17,11 +17,11 @@ type username struct {
 	requiredUsername string
 }
 
-func (u *username) Configure(config string) error {
+func (u *username) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		u.requiredUsername = config
+		return &username{requiredUsername: config}, nil
 	}
-	return nil
+	return u, nil
 }
 
 func (u *username) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {

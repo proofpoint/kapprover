@@ -102,8 +102,8 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectIps:      []string{"172.1.0.3"},
 		},
 		{
-			name: "ServiceClusterdomain",
-			clusterDomain:  "somedomain.invalid",
+			name:          "ServiceClusterdomain",
+			clusterDomain: "somedomain.invalid",
 			objects: []runtime.Object{
 				makeService(func(service *v1.Service) {}),
 			},
@@ -181,7 +181,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1"},
 		},
-		} {
+	} {
 		t.Run(testcase.name, func(t *testing.T) {
 			clusterDomain := testcase.clusterDomain
 			if clusterDomain == "" {

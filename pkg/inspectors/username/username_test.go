@@ -33,7 +33,7 @@ func TestInspectConfigured(t *testing.T) {
 	inspector, exists := inspectors.Get("username")
 	require.True(t, exists, "inspectors.Get(\"username\") to exist")
 
-	err := inspector.Configure("some-user")
+	inspector, err := inspector.Configure("some-user")
 	assert.NoError(t, err, "Configure")
 
 	for username, expectedMessage := range map[string]string{

@@ -1,6 +1,7 @@
 package altnamesforpod
 
 import (
+	"encoding/asn1"
 	"fmt"
 	"github.com/proofpoint/kapprover/pkg/csr"
 	"github.com/proofpoint/kapprover/pkg/inspectors"
@@ -8,9 +9,8 @@ import (
 	certificates "k8s.io/api/certificates/v1beta1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"strings"
-	"encoding/asn1"
 	"net"
+	"strings"
 )
 
 func init() {
@@ -24,14 +24,14 @@ type altnamesforpod struct {
 }
 
 var (
-	oidExtensionSubjectAltName        = []int{2, 5, 29, 17}
+	oidExtensionSubjectAltName = []int{2, 5, 29, 17}
 )
 
-func (a *altnamesforpod) Configure(config string) error {
+func (a *altnamesforpod) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		a.clusterDomain = config
+		return &altnamesforpod{clusterDomain: config}, nil
 	}
-	return nil
+	return a, nil
 }
 
 func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
@@ -111,8 +111,6 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 				badNames = append(badNames, fmt.Sprintf("Name of type %v", v.Tag))
 			}
 		}
-
-
 	}
 
 	if len(badNames) != 0 {

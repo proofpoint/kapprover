@@ -49,18 +49,19 @@ var supportedKeyUsages = map[string]certificates.KeyUsage{
 	"netscape sgc":        certificates.UsageNetscapSGC,
 }
 
-func (k *keyusage) Configure(config string) error {
+func (k *keyusage) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		k.permittedKeyUsages = map[certificates.KeyUsage]bool{}
+		ret := keyusage{permittedKeyUsages: map[certificates.KeyUsage]bool{}}
 		for _, keyUsage := range strings.Split(config, ",") {
 			usage, ok := supportedKeyUsages[strings.Replace(strings.ToLower(keyUsage), "_", " ", -1)]
 			if !ok {
-				return errors.New(fmt.Sprintf("unsupported usage %s", keyUsage))
+				return nil, errors.New(fmt.Sprintf("unsupported usage %s", keyUsage))
 			}
-			k.permittedKeyUsages[usage] = true
+			ret.permittedKeyUsages[usage] = true
 		}
+		return &ret, nil
 	}
-	return nil
+	return k, nil
 }
 
 func (k *keyusage) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {

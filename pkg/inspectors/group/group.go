@@ -17,11 +17,11 @@ type group struct {
 	requiredGroup string
 }
 
-func (g *group) Configure(config string) error {
+func (g *group) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		g.requiredGroup = config
+		return &group{requiredGroup: config}, nil
 	}
-	return nil
+	return g, nil
 }
 
 func (g *group) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
