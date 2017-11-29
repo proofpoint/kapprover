@@ -185,7 +185,7 @@ func TestInspect(t *testing.T) {
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4")
 				request.EmailAddresses = []string{"foo@example.invalid"}
 			},
-			expectMessage: "Subject Alt Name contains disallowed name: foo@example.invalid",
+			expectMessage: "Subject Alt Name contains disallowed name: Name of type 1",
 			podNamespace:  "somenamespace",
 		},
 		{
@@ -198,9 +198,8 @@ func TestInspect(t *testing.T) {
 					"example.net",
 				}
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4", "10.2.3.4", "10.2.3.5")
-				request.EmailAddresses = []string{"foo@example.invalid", "bar@example.invalid"}
 			},
-			expectMessage: "Subject Alt Name contains disallowed names: example.org,example.net,10.2.3.4,10.2.3.5,foo@example.invalid,bar@example.invalid",
+			expectMessage: "Subject Alt Name contains disallowed names: example.org,example.net,10.2.3.4,10.2.3.5",
 			podNamespace:  "somenamespace",
 		},
 		{
