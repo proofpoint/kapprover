@@ -9,6 +9,8 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"strings"
+	"encoding/asn1"
+	"net"
 )
 
 func init() {
@@ -20,6 +22,10 @@ func init() {
 type altnamesforpod struct {
 	clusterDomain string
 }
+
+var (
+	oidExtensionSubjectAltName        = []int{2, 5, 29, 17}
+)
 
 func (a *altnamesforpod) Configure(config string) error {
 	if config != "" {
@@ -53,33 +59,61 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 	}
 
 	var badNames []string
-	for _, name := range certificateRequest.DNSNames {
-		found := false
-		for _, permittedDnsname := range permittedDnsnames {
-			if name == permittedDnsname {
-				found = true
-				break
+
+	for _, extension := range certificateRequest.Extensions {
+		if !extension.Id.Equal(oidExtensionSubjectAltName) {
+			continue
+		}
+		var seq asn1.RawValue
+		var rest []byte
+		if rest, err = asn1.Unmarshal(extension.Value, &seq); err != nil {
+			return fmt.Sprintf("Could not parse SubjectAltName: %v", err), nil
+		} else if len(rest) != 0 {
+			return "Trailing data after X.509 SubjectAltName extension", nil
+		}
+		if !seq.IsCompound || seq.Tag != 16 || seq.Class != 0 {
+			return "Bad SubjectAltName sequence", nil
+		}
+
+		rest = seq.Bytes
+		for len(rest) > 0 {
+			var v asn1.RawValue
+			rest, err = asn1.Unmarshal(rest, &v)
+			if err != nil {
+				return fmt.Sprintf("Could not parse SubjectAltName: %v", err), nil
+			}
+			switch v.Tag {
+			case 2:
+				dnsName := string(v.Bytes)
+				found := false
+				for _, permittedDnsname := range permittedDnsnames {
+					if dnsName == permittedDnsname {
+						found = true
+						break
+					}
+				}
+				if !found {
+					badNames = append(badNames, dnsName)
+				}
+			case 7:
+				ip := net.IP(v.Bytes)
+				found := false
+				for _, permittedIp := range permittedIps {
+					if ip.Equal(permittedIp) {
+						found = true
+						break
+					}
+				}
+				if !found {
+					badNames = append(badNames, ip.String())
+				}
+			default:
+				badNames = append(badNames, fmt.Sprintf("Name of type %v", v.Tag))
 			}
 		}
-		if !found {
-			badNames = append(badNames, name)
-		}
-	}
 
-	for _, ip := range certificateRequest.IPAddresses {
-		found := false
-		for _, permittedIp := range permittedIps {
-			if ip.Equal(permittedIp) {
-				found = true
-				break
-			}
-		}
-		if !found {
-			badNames = append(badNames, ip.String())
-		}
-	}
 
-	badNames = append(badNames, certificateRequest.EmailAddresses...)
+	}
 
 	if len(badNames) != 0 {
 		msg = "Subject Alt Name contains disallowed name"
