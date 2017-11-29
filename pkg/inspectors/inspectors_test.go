@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
 )
 
 func TestInspectors(t *testing.T) {
@@ -17,20 +18,22 @@ func TestInspectors(t *testing.T) {
 	assert.Empty(actual, "default Inspectors.String()")
 	assert.Len(i, 0, "default Inspectors")
 
-	i.Set("group=system:serviceaccount")
+	assert.NoError(i.Set("group=system:serviceaccount"))
 	assert.Equal("group=system:serviceaccount", i.String(), "Inspectors.String()")
 	assert.Len(i, 1, "Inspectors")
 	assert.Equal("group", i[0].Name, "Inspectors[0].Name")
 
-	i.Set("username")
+	assert.NoError(i.Set("username"))
 	assert.Equal("group=system:serviceaccount,username", i.String(), "Inspectors.String()")
 	assert.Len(i, 2, "Inspectors")
 	assert.Equal("username", i[1].Name, "Inspectors[1].Name")
 
 	i = inspectors.Inspectors{}
-	i.Set("username,group")
-	assert.Equal("username,group", i.String(), "Inspectors.String()")
-	assert.Len(i, 2, "Inspectors")
-	assert.Equal("username", i[0].Name, "Inspectors[0].Name")
-	assert.Equal("group", i[1].Name, "Inspectors[1].Name")
+	assert.NoError(i.Set("signaturealgorithm=SHA256WithRSA,SHA384WithRSA"))
+	assert.Equal("signaturealgorithm=SHA256WithRSA,SHA384WithRSA", i.String(), "Inspectors.String()")
+	assert.Len(i, 1, "Inspectors")
+	assert.Equal("signaturealgorithm", i[0].Name, "Inspectors[0].Name")
+
+	i = inspectors.Inspectors{}
+	assert.Error(i.Set("notonlist"))
 }
