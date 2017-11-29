@@ -57,7 +57,7 @@ func TestInspectConfigured(t *testing.T) {
 	inspector, exists := inspectors.Get("signaturealgorithm")
 	require.True(t, exists, "inspectors.Get(\"signaturealgorithm\") to exist")
 
-	err := inspector.Configure("MD5WithRSA,SHA1WithRSA,ECDSAWithSHA1,ECDSAWithSHA256,ECDSAWithSHA384,ECDSAWithSHA512")
+	inspector, err := inspector.Configure("MD5WithRSA,SHA1WithRSA,ECDSAWithSHA1,ECDSAWithSHA256,ECDSAWithSHA384,ECDSAWithSHA512")
 	assert.NoError(t, err, "Configure")
 
 	for _, testcase := range []struct {
@@ -96,7 +96,7 @@ func TestConfigureBadAlgorithm(t *testing.T) {
 			inspector, exists := inspectors.Get("signaturealgorithm")
 			require.True(t, exists, "inspectors.Get(\"signaturealgorithm\") to exist")
 
-			err := inspector.Configure(algorithm)
+			inspector, err := inspector.Configure(algorithm)
 			assert.EqualErrorf(t, err, fmt.Sprintf("unsupported SignatureAlgorithm %s", algorithm), algorithm)
 		})
 	}

@@ -19,11 +19,11 @@ type subjectispodforuser struct {
 	clusterDomain string
 }
 
-func (s *subjectispodforuser) Configure(config string) error {
+func (s *subjectispodforuser) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
-		s.clusterDomain = config
+		return &subjectispodforuser{clusterDomain: config}, nil
 	}
-	return nil
+	return s, nil
 }
 
 func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {

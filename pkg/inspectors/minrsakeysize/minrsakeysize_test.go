@@ -41,7 +41,7 @@ func TestInspectConfigured(t *testing.T) {
 	inspector, exists := inspectors.Get("minrsakeysize")
 	require.True(t, exists, "inspectors.Get(\"minrsakeysize\") to exist")
 
-	err := inspector.Configure("2048")
+	inspector, err := inspector.Configure("2048")
 	assert.NoError(t, err, "Configure")
 
 	for keysize, expectedMessage := range map[uint]string{

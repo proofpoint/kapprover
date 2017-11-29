@@ -33,7 +33,7 @@ func TestInspectConfigured(t *testing.T) {
 	inspector, exists := inspectors.Get("group")
 	require.True(t, exists, "inspectors.Get(\"group\") to exist")
 
-	err := inspector.Configure("system:serviceaccount")
+	inspector, err := inspector.Configure("system:serviceaccount")
 	assert.NoError(t, err, "Configure")
 
 	for group, expectedMessage := range map[string]string{

@@ -20,7 +20,7 @@ var (
 // It returns an empty string to take no action, a human readable message with details
 // to take adverse action, or an error to temporarily fail.
 type Inspector interface {
-	Configure(string) error
+	Configure(string) (inspector Inspector, err error)
 	Inspect(kubernetes.Interface, *certificates.CertificateSigningRequest) (message string, err error)
 }
 
@@ -64,7 +64,8 @@ func (inspectors *Inspectors) Set(value string) error {
 		config = split[1]
 	}
 	if config != "" {
-		err := inspector.Configure(split[1])
+		var err error
+		inspector, err = inspector.Configure(split[1])
 		if err != nil {
 			return err
 		}

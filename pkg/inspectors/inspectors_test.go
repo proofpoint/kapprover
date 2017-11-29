@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
+	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
 )
 
 func TestInspectors(t *testing.T) {

@@ -75,7 +75,7 @@ func TestInspectConfigured(t *testing.T) {
 			sep = ","
 		}
 	}
-	err := inspector.Configure(config)
+	inspector, err := inspector.Configure(config)
 	assert.NoError(t, err, "Configure")
 
 	for _, testcase := range keyUsages {
@@ -98,7 +98,7 @@ func TestConfigureBadKeyusage(t *testing.T) {
 			inspector, exists := inspectors.Get("keyusage")
 			require.True(t, exists, "inspectors.Get(\"keyusage\") to exist")
 
-			err := inspector.Configure(keyUsage)
+			inspector, err := inspector.Configure(keyUsage)
 			assert.EqualErrorf(t, err, fmt.Sprintf("unsupported usage %s", keyUsage), "bad usage")
 		})
 	}

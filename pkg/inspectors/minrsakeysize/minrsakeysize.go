@@ -22,15 +22,15 @@ type minrsakeysize struct {
 	minSize int
 }
 
-func (m *minrsakeysize) Configure(config string) error {
+func (m *minrsakeysize) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
 		minsize, err := strconv.ParseUint(config, 10, 0)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		m.minSize = int(minsize)
+		return &minrsakeysize{minSize: int(minsize)}, nil
 	}
-	return nil
+	return m, nil
 }
 
 func (m *minrsakeysize) Inspect(client kubernetes.Interface, request *certificates.CertificateSigningRequest) (string, error) {
