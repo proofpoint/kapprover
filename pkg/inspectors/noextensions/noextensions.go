@@ -13,8 +13,13 @@ func init() {
 }
 
 // Noextensions is an Inspector that verifies that the CSR has no X.509 extensions
+// other than SubjectAltName
 type noextensions struct {
 }
+
+var (
+	oidExtensionSubjectAltName = []int{2, 5, 29, 17}
+)
 
 func (n *noextensions) Configure(config string) (inspectors.Inspector, error) {
 	if config != "" {
@@ -29,19 +34,26 @@ func (n *noextensions) Inspect(client kubernetes.Interface, request *certificate
 		return msg, nil
 	}
 
-	if len(certificateRequest.Extensions) == 0 {
+	numBad := 0
+	bad := ""
+	sep := " "
+	for _, extension := range certificateRequest.Extensions {
+		if !extension.Id.Equal(oidExtensionSubjectAltName) {
+			bad += sep + extension.Id.String()
+			sep = ","
+			numBad++
+		}
+	}
+
+	if numBad == 0 {
 		return "", nil
 	}
 
 	msg = "Contains X.509 extension"
-	if len(certificateRequest.Extensions) > 1 {
+	if numBad > 1 {
 		msg += "s"
 	}
-	sep := " "
-	for _, extension := range certificateRequest.Extensions {
-		msg += sep + extension.Id.String()
-		sep = ","
-	}
+	msg += bad
 
 	return msg, nil
 }
