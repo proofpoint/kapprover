@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/noextensions"
+	"net"
 )
 
 var (
@@ -74,6 +75,9 @@ func TestInspect(t *testing.T) {
 				},
 				SignatureAlgorithm: x509.SHA256WithRSAPSS,
 				ExtraExtensions:    extensions[:testcase.numExtensions],
+				DNSNames:           []string{"example.com"},
+				IPAddresses:        []net.IP{net.ParseIP("127.0.0.1")},
+				EmailAddresses:     []string{"nobody@example.com"},
 			}
 
 			certificateRequest, err := x509.CreateCertificateRequest(rand.Reader, &certificateRequestTemplate, key)
