@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -24,14 +26,17 @@ import (
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/subjectispodforuser"
 	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
-	"fmt"
 )
 
 var (
 	kubeconfigPath = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	deleteAfter    = flag.Duration("delete-after", time.Minute, "duration after which to delete filtered requests")
 	filters        inspectors.Inspectors
 	deniers        inspectors.Inspectors
 	warners        inspectors.Inspectors
+
+	scheduled    = map[string]bool{}
+	scheduledMux sync.Mutex
 )
 
 func init() {
@@ -61,7 +66,7 @@ func main() {
 
 	f := func(obj interface{}) {
 		if req, ok := obj.(*certificates.CertificateSigningRequest); ok {
-			if err := tryApprove(filters, deniers, warners, client, req); err != nil {
+			if err := tryApprove(filters, deniers, warners, *deleteAfter, client, req); err != nil {
 				log.Errorf("Failed to handle %q from %q: %s", req.ObjectMeta.Name, req.Spec.Username, err)
 				return
 			}
@@ -105,15 +110,16 @@ func newClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
-func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) error {
+func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, deleteAfter time.Duration, client *kubernetes.Clientset, request *certificates.CertificateSigningRequest) error {
 	for {
 		// Verify that the CSR hasn't been approved or denied already.
 		//
 		// There are only two possible conditions (CertificateApproved and
 		// CertificateDenied). Therefore if the CSR already has a condition,
 		// it means that the request has already been approved or denied, and that
-		// we should ignore the request.
+		// we should schedule deletion of the request.
 		if len(request.Status.Conditions) > 0 {
+			scheduleDelete(deleteAfter, client, request.Name)
 			return nil
 		}
 
@@ -181,6 +187,33 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 
 		log.Infof("Successfully %s %q from %q%s", condition.Type, request.ObjectMeta.Name, request.Spec.Username, detail)
 
+		scheduleDelete(deleteAfter, client, request.Name)
+
 		return nil
 	}
+}
+
+func scheduleDelete(deleteAfter time.Duration, client *kubernetes.Clientset, requestName string) {
+	{
+		scheduledMux.Lock()
+		defer scheduledMux.Unlock()
+
+		if scheduled[requestName] {
+			return
+		}
+		scheduled[requestName] = true
+	}
+
+	time.AfterFunc(deleteAfter, func() {
+		err := client.CertificatesV1beta1().CertificateSigningRequests().Delete(requestName, &metaV1.DeleteOptions{})
+		if err == nil {
+			log.Infof("Deleted request %q", requestName)
+		} else {
+			log.Errorf("Failed to delete request %q: %s", requestName, err)
+		}
+
+		scheduledMux.Lock()
+		delete(scheduled, requestName)
+		scheduledMux.Unlock()
+	})
 }
