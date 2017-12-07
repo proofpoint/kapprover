@@ -1,0 +1,16 @@
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "0.11.2"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+
+[[constraint]]
+  name = "k8s.io/api"
+
+[[constraint]]
+  name = "k8s.io/apimachinery"
+
+[[constraint]]
+  name = "k8s.io/client-go"
+  version = "5.0.1"

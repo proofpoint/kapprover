@@ -1,7 +1,6 @@
 .*
 *.md
 deployment.yaml
-vendor
 DCO
 LICENSE
 NOTICE
