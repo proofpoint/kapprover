@@ -9,17 +9,17 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/proofpoint/kapprover/pkg/inspectors"
-	"github.com/proofpoint/kapprover/pkg/kapprover"
+	"github.com/proofpoint/kapprover/inspectors"
+	"github.com/proofpoint/kapprover/kapprover"
 
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/altnamesforpod"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/group"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/keyusage"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/minrsakeysize"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/noextensions"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/signaturealgorithm"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/subjectispodforuser"
-	_ "github.com/proofpoint/kapprover/pkg/inspectors/username"
+	_ "github.com/proofpoint/kapprover/inspectors/altnamesforpod"
+	_ "github.com/proofpoint/kapprover/inspectors/group"
+	_ "github.com/proofpoint/kapprover/inspectors/keyusage"
+	_ "github.com/proofpoint/kapprover/inspectors/minrsakeysize"
+	_ "github.com/proofpoint/kapprover/inspectors/noextensions"
+	_ "github.com/proofpoint/kapprover/inspectors/signaturealgorithm"
+	_ "github.com/proofpoint/kapprover/inspectors/subjectispodforuser"
+	_ "github.com/proofpoint/kapprover/inspectors/username"
 )
 
 var (
