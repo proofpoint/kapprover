@@ -13,6 +13,7 @@ spec:
       labels:
         k8s-app: tls-approver
     spec:
+      serviceAccountName: kapprover
       containers:
       - name: tls-approver
         image: proofpoint/kapprover:0.4.0

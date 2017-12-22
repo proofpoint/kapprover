@@ -1,0 +1,73 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kapprover
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests" ]
+  verbs: ["get", "list", "delete"]
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests/approval"]
+  verbs: ["update"]
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kapprover
+  namespace: kube-system
+roleRef:
+  name: kapprover
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+subjects:
+- kind: ServiceAccount
+  name: kapprover
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: cert-requester
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests" ]
+  verbs: ["create", "get"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: cert-requester
+roleRef:
+  name: cert-requester
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+subjects:
+- kind: Group
+  name: system:serviceaccounts
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: services-lister
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: services-lister
+roleRef:
+  name: services-lister
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+subjects:
+- kind: Group
+  name: system:serviceaccounts
