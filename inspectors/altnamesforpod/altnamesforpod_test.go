@@ -29,6 +29,7 @@ func TestInspect(t *testing.T) {
 		inspectorConfig string
 		expectMessage   string
 		serviceAccount  string
+		objects 		[]runtime.Object
 		setupRequest    func(request *x509.CertificateRequest)
 		podNamespace    string
 		podIp           string
@@ -130,7 +131,6 @@ func TestInspect(t *testing.T) {
 		//{
 		//	name:          "WrongPodIp",
 		//	expectMessage: "No POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
-		//	podNamespace:  "somenamespace",
 		//	podIp:         "172.1.0.36",
 		//},
 		{
@@ -148,7 +148,6 @@ func TestInspect(t *testing.T) {
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4")
 			},
 			expectMessage: "",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name: "ExtraDomain",
@@ -161,7 +160,6 @@ func TestInspect(t *testing.T) {
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4")
 			},
 			expectMessage: "Subject Alt Name contains disallowed name: example.org",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name: "ExtraIp",
@@ -173,7 +171,6 @@ func TestInspect(t *testing.T) {
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4", "10.2.3.4")
 			},
 			expectMessage: "Subject Alt Name contains disallowed name: 10.2.3.4",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name: "EmailAddress",
@@ -186,7 +183,6 @@ func TestInspect(t *testing.T) {
 				request.EmailAddresses = []string{"foo@example.invalid"}
 			},
 			expectMessage: "Subject Alt Name contains disallowed name: Name of type 1",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name: "ExtraMultiple",
@@ -200,11 +196,11 @@ func TestInspect(t *testing.T) {
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4", "10.2.3.4", "10.2.3.5")
 			},
 			expectMessage: "Subject Alt Name contains disallowed names: example.org,example.net,10.2.3.4,10.2.3.5",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name:            "ConfiguredNotInClusterDomain",
 			inspectorConfig: "example.com",
+			objects:         []runtime.Object{},
 			expectMessage:   "Subject \"172-1-0-3.somenamespace.pod.cluster.local\" is not in the pod.example.com domain",
 		},
 		{
@@ -219,7 +215,6 @@ func TestInspect(t *testing.T) {
 				}
 				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4")
 			},
-			podNamespace: "somenamespace",
 		},
 	} {
 		t.Run(testcase.name, func(t *testing.T) {
@@ -234,42 +229,46 @@ func TestInspect(t *testing.T) {
 				assert.NoError(t, err, "Configure")
 			}
 
-			objects := []runtime.Object{
-				&v1.Pod{
-					TypeMeta: metaV1.TypeMeta{
-						Kind:       "Pod",
-						APIVersion: "v1",
-					},
-					ObjectMeta: metaV1.ObjectMeta{
-						Name:      "tls-app-579f7cd745-t6fdg",
-						Namespace: testcase.podNamespace,
-						Labels: map[string]string{
-							"app": "some-app",
-						},
-					},
-					Status: v1.PodStatus{
-						PodIP: "172.1.0.3",
-					},
-				},
-				&v1.Service{
-					ObjectMeta: metaV1.ObjectMeta{
-						Name:      "tls-service",
-						Namespace: "somenamespace",
-						Labels: map[string]string{
-							"app": "some-service",
-						},
-					},
-					Spec: v1.ServiceSpec{
-						Selector:    map[string]string{"app": "some-app"},
-						ClusterIP:   "10.0.0.1",
-						Type:        v1.ServiceTypeLoadBalancer,
-						ExternalIPs: []string{"10.1.2.3", "10.1.2.4"},
-					},
-				}}
 			if testcase.podNamespace == "" {
-				objects = []runtime.Object{}
+				testcase.podNamespace = "somenamespace"
 			}
-			client := fake.NewSimpleClientset(objects...)
+
+			if testcase.objects == nil {
+				testcase.objects = []runtime.Object{
+					&v1.Pod{
+						TypeMeta: metaV1.TypeMeta{
+							Kind:       "Pod",
+							APIVersion: "v1",
+						},
+						ObjectMeta: metaV1.ObjectMeta{
+							Name:      "tls-app-579f7cd745-t6fdg",
+							Namespace: testcase.podNamespace,
+							Labels: map[string]string{
+								"app": "some-app",
+							},
+						},
+						Status: v1.PodStatus{
+							PodIP: "172.1.0.3",
+						},
+					},
+					&v1.Service{
+						ObjectMeta: metaV1.ObjectMeta{
+							Name:      "tls-service",
+							Namespace: "somenamespace",
+							Labels: map[string]string{
+								"app": "some-service",
+							},
+						},
+						Spec: v1.ServiceSpec{
+							Selector:    map[string]string{"app": "some-app"},
+							ClusterIP:   "10.0.0.1",
+							Type:        v1.ServiceTypeLoadBalancer,
+							ExternalIPs: []string{"10.1.2.3", "10.1.2.4"},
+						},
+					},
+				}
+			}
+			client := fake.NewSimpleClientset(testcase.objects...)
 
 			// Generate the certificate request.
 			certificateRequestTemplate := x509.CertificateRequest{
