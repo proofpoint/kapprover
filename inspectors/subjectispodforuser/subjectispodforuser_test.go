@@ -28,6 +28,7 @@ func TestInspect(t *testing.T) {
 		inspectorConfig string
 		expectMessage   string
 		serviceAccount  string
+		objects 		[]runtime.Object
 		setupRequest    func(request *x509.CertificateRequest)
 		podNamespace    string
 		podIp           string
@@ -141,28 +142,25 @@ func TestInspect(t *testing.T) {
 			name:           "WrongUserPrefix",
 			expectMessage:  "Requesting user \"foo:somenamespace:someserviceaccount\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "foo:somenamespace:someserviceaccount",
-			podNamespace:   "somenamespace",
 		},
 		{
 			name:           "WrongUserNamespace",
 			expectMessage:  "Requesting user \"system:serviceaccount:other:someserviceaccount\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "system:serviceaccount:other:someserviceaccount",
-			podNamespace:   "somenamespace",
 		},
 		{
 			name:           "WrongUserAccount",
 			expectMessage:  "Requesting user \"system:serviceaccount:somenamespace:other\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "system:serviceaccount:somenamespace:other",
-			podNamespace:   "somenamespace",
 		},
 		{
 			name:          "Good",
 			expectMessage: "",
-			podNamespace:  "somenamespace",
 		},
 		{
 			name:            "ConfiguredNotInClusterDomain",
 			inspectorConfig: "example.com",
+			objects:         []runtime.Object{},
 			expectMessage:   "Subject \"172-1-0-3.somenamespace.pod.cluster.local\" is not in the pod.example.com domain",
 		},
 		{
@@ -172,7 +170,6 @@ func TestInspect(t *testing.T) {
 			setupRequest: func(request *x509.CertificateRequest) {
 				request.Subject.CommonName = "172-1-0-3.somenamespace.pod.example.com"
 			},
-			podNamespace: "somenamespace",
 		},
 	} {
 		t.Run(testcase.name, func(t *testing.T) {
@@ -187,33 +184,36 @@ func TestInspect(t *testing.T) {
 				assert.NoError(t, err, "Configure")
 			}
 
-			podIp := testcase.podIp
-			if podIp == "" {
-				podIp = "172.1.0.3"
+			if testcase.podIp == "" {
+				testcase.podIp = "172.1.0.3"
 			}
-			objects := []runtime.Object{&v1.Pod{
-				TypeMeta: metaV1.TypeMeta{
-					Kind:       "Pod",
-					APIVersion: "v1",
-				},
-				ObjectMeta: metaV1.ObjectMeta{
-					Name:      "tls-app-579f7cd745-t6fdg",
-					Namespace: testcase.podNamespace,
-					Labels: map[string]string{
-						"tag": "",
-					},
-				},
-				Spec: v1.PodSpec{
-					ServiceAccountName: "someserviceaccount",
-				},
-				Status: v1.PodStatus{
-					PodIP: podIp,
-				},
-			}}
+
 			if testcase.podNamespace == "" {
-				objects = []runtime.Object{}
+				testcase.podNamespace = "somenamespace"
 			}
-			client := fake.NewSimpleClientset(objects...)
+
+			if testcase.objects == nil {
+				testcase.objects = []runtime.Object{&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-app-579f7cd745-t6fdg",
+						Namespace: testcase.podNamespace,
+						Labels: map[string]string{
+							"tag": "",
+						},
+					},
+					Spec: v1.PodSpec{
+						ServiceAccountName: "someserviceaccount",
+					},
+					Status: v1.PodStatus{
+						PodIP: testcase.podIp,
+					},
+				}}
+			}
+			client := fake.NewSimpleClientset(testcase.objects...)
 
 			// Generate the certificate request.
 			certificateRequestTemplate := x509.CertificateRequest{
