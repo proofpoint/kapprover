@@ -7,6 +7,7 @@ import (
 	certificates "k8s.io/api/certificates/v1beta1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 )
 
@@ -52,6 +53,12 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 
 	if len(filtered) == 0 {
 		return fmt.Sprintf("No running POD in namespace %q with IP %q", namespace, podIp), nil
+	}
+	if len(filtered) > 1 {
+		logrus.Warnf("Subjectispodforuser found multiple pods for IP %q", podIp)
+		for _, pod := range filtered {
+			logrus.Infof("Pod %+v", pod)
+		}
 	}
 
 	expectedServiceAccount := "system:serviceaccount:" + namespace + ":" + filtered[0].Spec.ServiceAccountName
