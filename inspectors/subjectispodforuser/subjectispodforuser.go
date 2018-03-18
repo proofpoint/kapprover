@@ -47,7 +47,7 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 
 	expectedServiceAccount := "system:serviceaccount:" + namespace + ":" + podList.Items[0].Spec.ServiceAccountName
 	if request.Spec.Username != expectedServiceAccount {
-		return fmt.Sprintf("Requesting user is not %q", expectedServiceAccount), nil
+		return fmt.Sprintf("Requesting user %q is not %q", request.Spec.Username, expectedServiceAccount), nil
 	}
 
 	return "", nil

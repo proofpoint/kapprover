@@ -139,19 +139,19 @@ func TestInspect(t *testing.T) {
 		},
 		{
 			name:           "WrongUserPrefix",
-			expectMessage:  "Requesting user is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
+			expectMessage:  "Requesting user \"foo:somenamespace:someserviceaccount\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "foo:somenamespace:someserviceaccount",
 			podNamespace:   "somenamespace",
 		},
 		{
 			name:           "WrongUserNamespace",
-			expectMessage:  "Requesting user is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
+			expectMessage:  "Requesting user \"system:serviceaccount:other:someserviceaccount\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "system:serviceaccount:other:someserviceaccount",
 			podNamespace:   "somenamespace",
 		},
 		{
 			name:           "WrongUserAccount",
-			expectMessage:  "Requesting user is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
+			expectMessage:  "Requesting user \"system:serviceaccount:somenamespace:other\" is not \"system:serviceaccount:somenamespace:someserviceaccount\"",
 			serviceAccount: "system:serviceaccount:somenamespace:other",
 			podNamespace:   "somenamespace",
 		},
