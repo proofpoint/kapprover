@@ -12,6 +12,7 @@ import (
 	"net"
 	"strings"
 	"k8s.io/api/core/v1"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -60,6 +61,12 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 
 	if len(filtered) == 0 {
 		return fmt.Sprintf("No running POD in namespace %q with IP %q", namespace, podIp), nil
+	}
+	if len(filtered) > 1 {
+		logrus.Warnf("Altnamesforpod found multiple pods for IP %q", podIp)
+		for _, pod := range filtered {
+			logrus.Infof("Pod %+v", pod)
+		}
 	}
 
 	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain)
