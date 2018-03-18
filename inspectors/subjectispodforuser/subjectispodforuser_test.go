@@ -28,7 +28,7 @@ func TestInspect(t *testing.T) {
 		inspectorConfig string
 		expectMessage   string
 		serviceAccount  string
-		objects 		[]runtime.Object
+		objects         []runtime.Object
 		setupRequest    func(request *x509.CertificateRequest)
 		podNamespace    string
 		podIp           string
@@ -129,13 +129,13 @@ func TestInspect(t *testing.T) {
 		// https://github.com/kubernetes/client-go/issues/326
 		//{
 		//	name:          "WrongPodIp",
-		//	expectMessage: "No POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+		//	expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 		//	podNamespace:  "somenamespace",
 		//	podIp:         "172.1.0.36",
 		//},
 		{
 			name:          "WrongPodNamespace",
-			expectMessage: "No POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+			expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 			podNamespace:  "other",
 		},
 		{
@@ -154,8 +154,52 @@ func TestInspect(t *testing.T) {
 			serviceAccount: "system:serviceaccount:somenamespace:other",
 		},
 		{
-			name:          "Good",
-			expectMessage: "",
+			name: "Good",
+		},
+		{
+			name: "IgnoresNotPendingOrRunningPod",
+			objects: []runtime.Object{
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-app-579f7cd745-wrong",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"tag": "",
+						},
+					},
+					Spec: v1.PodSpec{
+						ServiceAccountName: "wrongserviceaccount",
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodFailed,
+						PodIP: "172.1.0.3",
+					},
+				},
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-app-579f7cd745-t6fdg",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"tag": "",
+						},
+					},
+					Spec: v1.PodSpec{
+						ServiceAccountName: "someserviceaccount",
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						PodIP: "172.1.0.3",
+					},
+				},
+			},
 		},
 		{
 			name:            "ConfiguredNotInClusterDomain",
@@ -209,6 +253,7 @@ func TestInspect(t *testing.T) {
 						ServiceAccountName: "someserviceaccount",
 					},
 					Status: v1.PodStatus{
+						Phase: v1.PodPending,
 						PodIP: testcase.podIp,
 					},
 				}}

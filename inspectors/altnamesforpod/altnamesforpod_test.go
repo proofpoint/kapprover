@@ -29,7 +29,7 @@ func TestInspect(t *testing.T) {
 		inspectorConfig string
 		expectMessage   string
 		serviceAccount  string
-		objects 		[]runtime.Object
+		objects         []runtime.Object
 		setupRequest    func(request *x509.CertificateRequest)
 		podNamespace    string
 		podIp           string
@@ -130,12 +130,12 @@ func TestInspect(t *testing.T) {
 		// https://github.com/kubernetes/client-go/issues/326
 		//{
 		//	name:          "WrongPodIp",
-		//	expectMessage: "No POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+		//	expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 		//	podIp:         "172.1.0.36",
 		//},
 		{
 			name:          "WrongPodNamespace",
-			expectMessage: "No POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+			expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 			podNamespace:  "other",
 		},
 		{
@@ -206,7 +206,69 @@ func TestInspect(t *testing.T) {
 		{
 			name:            "ConfiguredGood",
 			inspectorConfig: "example.com",
-			expectMessage:   "",
+			setupRequest: func(request *x509.CertificateRequest) {
+				request.Subject.CommonName = "172-1-0-3.somenamespace.pod.example.com"
+				request.DNSNames = []string{
+					"172-1-0-3.somenamespace.pod.example.com",
+					"tls-service.somenamespace.svc.example.com",
+				}
+				request.IPAddresses = makeIps("172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4")
+			},
+		},
+		{
+			name:            "IgnoresNotPendingOrRunningPod",
+			inspectorConfig: "example.com",
+			objects: []runtime.Object{
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "wrong-app-579f7cd745-wrong",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"app": "wrong-app",
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodFailed,
+						PodIP: "172.1.0.3",
+					},
+				},
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-app-579f7cd745-t6fdg",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"app": "some-app",
+						},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+						PodIP: "172.1.0.3",
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-service",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"app": "some-service",
+						},
+					},
+					Spec: v1.ServiceSpec{
+						Selector:    map[string]string{"app": "some-app"},
+						ClusterIP:   "10.0.0.1",
+						Type:        v1.ServiceTypeLoadBalancer,
+						ExternalIPs: []string{"10.1.2.3", "10.1.2.4"},
+					},
+				},
+			},
 			setupRequest: func(request *x509.CertificateRequest) {
 				request.Subject.CommonName = "172-1-0-3.somenamespace.pod.example.com"
 				request.DNSNames = []string{
@@ -248,6 +310,7 @@ func TestInspect(t *testing.T) {
 							},
 						},
 						Status: v1.PodStatus{
+							Phase: v1.PodPending,
 							PodIP: "172.1.0.3",
 						},
 					},
