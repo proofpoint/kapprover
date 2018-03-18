@@ -46,13 +46,17 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 
 	filtered := make([]v1.Pod, 0, 1)
 	for _, pod := range podList.Items {
-		if pod.Status.Phase == v1.PodPending || pod.Status.Phase == v1.PodRunning {
-			filtered = append(filtered, pod)
+		if pod.DeletionTimestamp != nil {
+			continue
 		}
+		if pod.Status.Phase != v1.PodPending && pod.Status.Phase != v1.PodRunning {
+			continue
+		}
+		filtered = append(filtered, pod)
 	}
 
 	if len(filtered) == 0 {
-		return fmt.Sprintf("No running POD in namespace %q with IP %q", namespace, podIp), nil
+		return fmt.Sprintf("No pending or running POD in namespace %q with IP %q", namespace, podIp), nil
 	}
 	if len(filtered) > 1 {
 		logrus.Warnf("Subjectispodforuser found multiple pods for IP %q", podIp)

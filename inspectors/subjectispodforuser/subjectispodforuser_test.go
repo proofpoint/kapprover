@@ -23,6 +23,8 @@ func TestInspect(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Generate the private key")
 
+	nowTime := metaV1.Now()
+
 	for _, testcase := range []struct {
 		name            string
 		inspectorConfig string
@@ -129,13 +131,13 @@ func TestInspect(t *testing.T) {
 		// https://github.com/kubernetes/client-go/issues/326
 		//{
 		//	name:          "WrongPodIp",
-		//	expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+		//	expectMessage: "No pending or running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 		//	podNamespace:  "somenamespace",
 		//	podIp:         "172.1.0.36",
 		//},
 		{
 			name:          "WrongPodNamespace",
-			expectMessage: "No running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
+			expectMessage: "No pending or running POD in namespace \"somenamespace\" with IP \"172.1.0.3\"",
 			podNamespace:  "other",
 		},
 		{
@@ -196,6 +198,52 @@ func TestInspect(t *testing.T) {
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodPending,
+						PodIP: "172.1.0.3",
+					},
+				},
+			},
+		},
+		{
+			name: "IgnoresPodMarkedForDeletion",
+			objects: []runtime.Object{
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:              "tls-app-579f7cd745-wrong",
+						Namespace:         "somenamespace",
+						DeletionTimestamp: &nowTime,
+						Labels: map[string]string{
+							"tag": "",
+						},
+					},
+					Spec: v1.PodSpec{
+						ServiceAccountName: "wrongserviceaccount",
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodRunning,
+						PodIP: "172.1.0.3",
+					},
+				},
+				&v1.Pod{
+					TypeMeta: metaV1.TypeMeta{
+						Kind:       "Pod",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      "tls-app-579f7cd745-t6fdg",
+						Namespace: "somenamespace",
+						Labels: map[string]string{
+							"tag": "",
+						},
+					},
+					Spec: v1.PodSpec{
+						ServiceAccountName: "someserviceaccount",
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodRunning,
 						PodIP: "172.1.0.3",
 					},
 				},
