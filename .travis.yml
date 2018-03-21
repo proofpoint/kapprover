@@ -9,6 +9,3 @@ install:
 
 script:
 - go test ./...
-
-notifications:
-  email: false
