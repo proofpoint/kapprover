@@ -1,11 +1,14 @@
 language: go
-sudo: required
+go_import_path: github.com/proofpoint/kapprover
+
+go:
+- "1.9"
 
 install:
-- curl https://glide.sh/get | sh
+- true
 
 script:
-- go test $(glide novendor)
+- go test ./...
 
 notifications:
   email: false
