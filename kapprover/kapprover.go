@@ -3,6 +3,7 @@ package kapprover
 import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/proofpoint/kapprover/inspectors"
 	log "github.com/sirupsen/logrus"
 	certificates "k8s.io/api/certificates/v1beta1"
@@ -11,6 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -24,40 +27,45 @@ var (
 var (
 	requestsApproved = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "ieng_kapprover_requests_approved",
+			Name: "kapprover_requests_approved",
 			Help: "Number of approved requests.",
 		},
 		[]string{},
 	)
 	requestsDenied = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "ieng_kapprover_requests_denied",
+			Name: "kapprover_requests_denied",
 			Help: "Number of denied requests.",
 		},
 		[]string{"reason"},
 	)
 	requestsWarned = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "ieng_kapprover_requests_warned",
-			Help: "Number of warned requests.",
+			Name: "kapprover_requests_warned",
+			Help: "Number of warnings on approved requests.",
 		},
 		[]string{"reason"},
 	)
 	requestsFiltered = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "ieng_kapprover_requests_filtered",
+			Name: "kapprover_requests_filtered",
 			Help: "Number of filtered requests.",
 		},
-		[]string{},
+		[]string{"reason"},
 	)
 	requestsError = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "ieng_kapprover_requests_error",
-			Help: "Number of requests that errored out.",
+			Name: "kapprover_requests_error",
+			Help: "Number of requests encountering an error.",
 		},
 		[]string{"message"},
 	)
 )
+
+func ServePrometheusMetrics(port int) {
+	registerPrometheusMetrics()
+	go serveMetrics(port)
+}
 
 func registerPrometheusMetrics() {
 	prometheus.MustRegister(requestsApproved)
@@ -67,10 +75,18 @@ func registerPrometheusMetrics() {
 	prometheus.MustRegister(requestsError)
 }
 
-func HandleRequests(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, deleteAfter time.Duration, client *kubernetes.Clientset) {
-	//Register Prometheus metrics
-	registerPrometheusMetrics()
+func serveMetrics(port int) {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
+	http.Handle("/metrics", promhttp.Handler())
+
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
+}
+
+func HandleRequests(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, deleteAfter time.Duration, client *kubernetes.Clientset) {
 	// Create a watcher and an informer for CertificateSigningRequests.
 	// The Add function
 	watchList := cache.NewListWatchFromClient(
@@ -122,12 +138,12 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		for _, filter := range filters {
 			message, err := filter.Inspector.Inspect(client, request)
 			if err != nil {
-				requestsError.WithLabelValues("filterError").Inc()
+				requestsError.WithLabelValues(filter.Name).Inc()
 				return err
 			}
 			if message != "" {
 				log.Infof("Skipping %q from %q: %s", request.Name, request.Spec.Username, message)
-				requestsFiltered.WithLabelValues().Inc()
+				requestsFiltered.WithLabelValues(filter.Name).Inc()
 				return nil
 			}
 		}
@@ -141,7 +157,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		for _, denier := range deniers {
 			message, err := denier.Inspector.Inspect(client, request)
 			if err != nil {
-				requestsError.WithLabelValues("denyError").Inc()
+				requestsError.WithLabelValues(denier.Name).Inc()
 				return err
 			}
 			if message != "" {
@@ -177,7 +193,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 				}
 				continue
 			}
-			requestsError.WithLabelValues("csrSubmitError").Inc()
+			requestsError.WithLabelValues("updateApproval").Inc()
 			return err
 		}
 
