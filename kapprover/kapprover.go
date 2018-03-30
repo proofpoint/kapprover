@@ -2,10 +2,7 @@ package kapprover
 
 import (
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/proofpoint/kapprover/inspectors"
 	log "github.com/sirupsen/logrus"
 	certificates "k8s.io/api/certificates/v1beta1"
@@ -14,6 +11,9 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"strings"
+	"sync"
+	"time"
 )
 
 var (
@@ -21,7 +21,56 @@ var (
 	scheduledMux sync.Mutex
 )
 
+var (
+	requestsApproved = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ieng_kapprover_requests_approved",
+			Help: "Number of approved requests.",
+		},
+		[]string{},
+	)
+	requestsDenied = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ieng_kapprover_requests_denied",
+			Help: "Number of denied requests.",
+		},
+		[]string{"reason"},
+	)
+	requestsWarned = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ieng_kapprover_requests_warned",
+			Help: "Number of warned requests.",
+		},
+		[]string{"reason"},
+	)
+	requestsFiltered = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ieng_kapprover_requests_filtered",
+			Help: "Number of filtered requests.",
+		},
+		[]string{},
+	)
+	requestsError = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ieng_kapprover_requests_error",
+			Help: "Number of requests that errored out.",
+		},
+		[]string{"message"},
+	)
+)
+
+func registerPrometheusMetrics() {
+	prometheus.MustRegister(requestsApproved)
+	prometheus.MustRegister(requestsDenied)
+	prometheus.MustRegister(requestsWarned)
+	prometheus.MustRegister(requestsFiltered)
+	prometheus.MustRegister(requestsError)
+}
+
 func HandleRequests(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, deleteAfter time.Duration, client *kubernetes.Clientset) {
+	//Register Prometheus metrics
+	registerPrometheusMetrics()
+
 	// Create a watcher and an informer for CertificateSigningRequests.
 	// The Add function
 	watchList := cache.NewListWatchFromClient(
@@ -73,10 +122,12 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		for _, filter := range filters {
 			message, err := filter.Inspector.Inspect(client, request)
 			if err != nil {
+				requestsError.WithLabelValues("filterError").Inc()
 				return err
 			}
 			if message != "" {
 				log.Infof("Skipping %q from %q: %s", request.Name, request.Spec.Username, message)
+				requestsFiltered.WithLabelValues().Inc()
 				return nil
 			}
 		}
@@ -90,12 +141,14 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		for _, denier := range deniers {
 			message, err := denier.Inspector.Inspect(client, request)
 			if err != nil {
+				requestsError.WithLabelValues("denyError").Inc()
 				return err
 			}
 			if message != "" {
 				condition.Type = certificates.CertificateDenied
 				condition.Reason = denier.Name
 				condition.Message = message
+				requestsDenied.WithLabelValues(condition.Reason).Inc()
 				break
 			}
 		}
@@ -105,6 +158,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 				message, _ := warner.Inspector.Inspect(client, request)
 				if message != "" {
 					log.Warnf("Approving CSR %q from %q despite %s: %s", request.Name, request.Spec.Username, warner.Name, message)
+					requestsWarned.WithLabelValues(warner.Name).Inc()
 				}
 			}
 		}
@@ -123,7 +177,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 				}
 				continue
 			}
-
+			requestsError.WithLabelValues("csrSubmitError").Inc()
 			return err
 		}
 
@@ -135,6 +189,7 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 		log.Infof("Successfully %s %q from %q%s", condition.Type, request.ObjectMeta.Name, request.Spec.Username, detail)
 
 		scheduleDelete(deleteAfter, client, request.Name)
+		requestsApproved.WithLabelValues().Inc()
 
 		return nil
 	}

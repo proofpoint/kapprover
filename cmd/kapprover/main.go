@@ -2,15 +2,15 @@ package main
 
 import (
 	"flag"
-	"time"
-
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/proofpoint/kapprover/inspectors"
+	"github.com/proofpoint/kapprover/kapprover"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/proofpoint/kapprover/inspectors"
-	"github.com/proofpoint/kapprover/kapprover"
+	"net/http"
+	"time"
 
 	_ "github.com/proofpoint/kapprover/inspectors/altnamesforpod"
 	_ "github.com/proofpoint/kapprover/inspectors/group"
@@ -46,7 +46,19 @@ func main() {
 		return
 	}
 
+	go serveMetrics()
 	kapprover.HandleRequests(filters, deniers, warners, *deleteAfter, client)
+}
+
+func serveMetrics() {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	log.Fatal(http.ListenAndServe(":9201", nil))
 }
 
 func newClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
