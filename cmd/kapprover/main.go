@@ -2,15 +2,13 @@ package main
 
 import (
 	"flag"
-	"time"
-
+	"github.com/proofpoint/kapprover/inspectors"
+	"github.com/proofpoint/kapprover/kapprover"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/proofpoint/kapprover/inspectors"
-	"github.com/proofpoint/kapprover/kapprover"
+	"time"
 
 	_ "github.com/proofpoint/kapprover/inspectors/altnamesforpod"
 	_ "github.com/proofpoint/kapprover/inspectors/group"
@@ -28,6 +26,7 @@ var (
 	filters        inspectors.Inspectors
 	deniers        inspectors.Inspectors
 	warners        inspectors.Inspectors
+	metricsPort    = 8081
 )
 
 func init() {
@@ -46,6 +45,7 @@ func main() {
 		return
 	}
 
+	go kapprover.ServePrometheusMetrics(metricsPort)
 	kapprover.HandleRequests(filters, deniers, warners, *deleteAfter, client)
 }
 
