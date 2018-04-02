@@ -3,6 +3,7 @@ package kapprover
 import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/proofpoint/kapprover/inspectors"
 	log "github.com/sirupsen/logrus"
 	certificates "k8s.io/api/certificates/v1beta1"
@@ -11,6 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -65,6 +68,17 @@ func registerPrometheusMetrics() {
 	prometheus.MustRegister(requestsWarned)
 	prometheus.MustRegister(requestsFiltered)
 	prometheus.MustRegister(requestsError)
+}
+
+func ServePrometheusMetrics(port int) {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
 
 func HandleRequests(filters inspectors.Inspectors, deniers inspectors.Inspectors, warners inspectors.Inspectors, deleteAfter time.Duration, client *kubernetes.Clientset) {
