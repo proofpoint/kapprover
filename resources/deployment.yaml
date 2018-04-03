@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tls-approver
@@ -7,6 +7,9 @@ metadata:
     k8s-app: tls-approver
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: tls-approver
   template:
     metadata:
       name: tls-approver
@@ -18,6 +21,9 @@ spec:
       - name: tls-approver
         image: proofpoint/kapprover:0.4.0
         imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+          protocol: TCP
         args:
           - -filter=group=system:serviceaccounts
           - -denier=signaturealgorithm=SHA256WithRSA,SHA384WithRSA,SHA512WithRSA,SHA256WithRSAPSS,SHA384WithRSAPSS,SHA512WithRSAPSS
