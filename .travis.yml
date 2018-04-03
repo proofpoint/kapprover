@@ -2,7 +2,7 @@ language: go
 go_import_path: github.com/proofpoint/kapprover
 
 go:
-- "1.9"
+- "1.10"
 
 install:
 - true
