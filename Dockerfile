@@ -1,4 +1,4 @@
-FROM       golang:1.10
+FROM       golang:1.12
 ADD        . /go/src/github.com/proofpoint/kapprover
 RUN        go install github.com/proofpoint/kapprover/cmd/kapprover && \
            go test github.com/proofpoint/kapprover/...
