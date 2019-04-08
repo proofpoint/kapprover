@@ -19,7 +19,7 @@ spec:
       serviceAccountName: kapprover
       containers:
       - name: tls-approver
-        image: proofpoint/kapprover:0.6.0
+        image: proofpoint/kapprover:0.7.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
