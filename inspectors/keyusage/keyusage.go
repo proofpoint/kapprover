@@ -26,7 +26,7 @@ type keyusage struct {
 var supportedKeyUsages = map[string]certificates.KeyUsage{
 	"signing":             certificates.UsageSigning,
 	"digital signature":   certificates.UsageDigitalSignature,
-	"content committment": certificates.UsageContentCommittment,
+	"content commitment":  certificates.UsageContentCommittment,
 	"key encipherment":    certificates.UsageKeyEncipherment,
 	"key agreement":       certificates.UsageKeyAgreement,
 	"data encipherment":   certificates.UsageDataEncipherment,
