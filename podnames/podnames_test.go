@@ -41,6 +41,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"somehostname.somesubdomain.somenamespace.svc.cluster.local",
+				"somehostname.somesubdomain.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3"},
 		},
@@ -68,6 +69,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
@@ -110,6 +112,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.somedomain.invalid",
 				"tls-service.somenamespace.svc.somedomain.invalid",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
@@ -123,6 +126,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
@@ -136,6 +140,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
@@ -150,6 +155,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
 				"someexternalname.somedomain.invalid",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
 		},
@@ -165,6 +171,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
 				"someexternalname.somedomain.invalid",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
 		},
@@ -178,6 +185,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1"},
 		},
@@ -210,7 +218,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				testcase.setupPod(&pod)
 			}
 			client := fake.NewSimpleClientset(testcase.objects...)
-			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain)
+			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain, true)
 
 			assert.Subset(t, testcase.expectDnsnames, dnsnames, "Dnsnames contains all expected values")
 			assert.Subset(t, dnsnames, testcase.expectDnsnames, dnsnames, "All values in dnsnames are expected")

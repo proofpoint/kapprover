@@ -6,23 +6,27 @@ import (
 	"github.com/proofpoint/kapprover/csr"
 	"github.com/proofpoint/kapprover/inspectors"
 	"github.com/proofpoint/kapprover/podnames"
+	"github.com/sirupsen/logrus"
 	certificates "k8s.io/api/certificates/v1beta1"
+	"k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net"
 	"strings"
-	"k8s.io/api/core/v1"
-	"github.com/sirupsen/logrus"
 )
 
 func init() {
-	inspectors.Register("altnamesforpod", &altnamesforpod{"cluster.local"})
+	inspectors.Register("altnamesforpod", &altnamesforpod{
+		clusterDomain:    "cluster.local",
+		allowUnqualified: true,
+	})
 }
 
 // AltNamesForPod is an Inspector that verifies all the Subject Alt Names in the CSR are appropriate
 // for the POD named in the subject
 type altnamesforpod struct {
-	clusterDomain string
+	clusterDomain    string
+	allowUnqualified bool
 }
 
 var (
@@ -73,7 +77,7 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 		}
 	}
 
-	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain)
+	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain, a.allowUnqualified)
 	if err != nil {
 		return "", err
 	}

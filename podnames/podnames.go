@@ -13,10 +13,13 @@ import (
 // GetNamesForPod returns the DNS names and IPs that a given POD is permitted to have, either in its own right
 // or by dint of matching services.
 // Does not currently pay attention to static Endpoints.
-func GetNamesForPod(client kubernetes.Interface, pod v1.Pod, clusterDomain string) (dnsnames []string, ips []net.IP, err error) {
+func GetNamesForPod(client kubernetes.Interface, pod v1.Pod, clusterDomain string, allowUnqualified bool) (dnsnames []string, ips []net.IP, err error) {
 	dnsnames = []string{fmt.Sprintf("%s.%s.pod.%s", ipToName(pod.Status.PodIP), pod.Namespace, clusterDomain)}
 	if pod.Spec.Hostname != "" && pod.Spec.Subdomain != "" {
 		dnsnames = append(dnsnames, fmt.Sprintf("%s.%s.%s.svc.%s", pod.Spec.Hostname, pod.Spec.Subdomain, pod.Namespace, clusterDomain))
+		if allowUnqualified {
+			dnsnames = append(dnsnames, fmt.Sprintf("%s.%s.%s.svc", pod.Spec.Hostname, pod.Spec.Subdomain, pod.Namespace))
+		}
 	}
 
 	ips = []net.IP{net.ParseIP(pod.Status.PodIP)}
@@ -34,6 +37,9 @@ func GetNamesForPod(client kubernetes.Interface, pod v1.Pod, clusterDomain strin
 		selector := labels.Set(service.Spec.Selector).AsSelectorPreValidated()
 		if selector.Matches(podLabels) {
 			dnsnames = append(dnsnames, fmt.Sprintf("%s.%s.svc.%s", service.Name, service.Namespace, clusterDomain))
+			if allowUnqualified {
+				dnsnames = append(dnsnames, fmt.Sprintf("%s.%s.svc", service.Name, service.Namespace))
+			}
 
 			if service.Spec.Type == v1.ServiceTypeExternalName {
 				if service.Spec.ExternalName != "" {
