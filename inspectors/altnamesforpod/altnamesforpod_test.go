@@ -35,6 +35,7 @@ func TestInspect(t *testing.T) {
 		setupRequest    func(request *x509.CertificateRequest)
 		podNamespace    string
 		podIp           string
+		inspectorName   string
 	}{
 		{
 			name:          "CnHasO",
@@ -290,8 +291,8 @@ func TestInspect(t *testing.T) {
 						APIVersion: "v1",
 					},
 					ObjectMeta: metaV1.ObjectMeta{
-						Name:      "wrong-app-579f7cd745-wrong",
-						Namespace: "somenamespace",
+						Name:              "wrong-app-579f7cd745-wrong",
+						Namespace:         "somenamespace",
 						DeletionTimestamp: &nowTime,
 						Labels: map[string]string{
 							"app": "wrong-app",
@@ -346,7 +347,11 @@ func TestInspect(t *testing.T) {
 		},
 	} {
 		t.Run(testcase.name, func(t *testing.T) {
-			inspector, exists := inspectors.Get("altnamesforpod")
+			if testcase.inspectorName == "" {
+				testcase.inspectorName = "altnamesforpodallowunqualified"
+			}
+
+			inspector, exists := inspectors.Get(testcase.inspectorName)
 			if !exists {
 				t.Fatal("Expected inspectors.Get(\"altnamesforpod\") to exist, did not")
 			}

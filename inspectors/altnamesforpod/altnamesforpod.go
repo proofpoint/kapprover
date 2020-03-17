@@ -17,6 +17,10 @@ import (
 
 func init() {
 	inspectors.Register("altnamesforpod", &altnamesforpod{
+		clusterDomain: "cluster.local",
+	})
+
+	inspectors.Register("altnamesforpodallowunqualified", &altnamesforpod{
 		clusterDomain:    "cluster.local",
 		allowUnqualified: true,
 	})
@@ -75,6 +79,12 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 		for _, pod := range filtered {
 			logrus.Infof("Pod %+v", pod)
 		}
+	}
+
+	fmt.Println(a.allowUnqualified)
+
+	if true {
+		return fmt.Sprintf("something"), nil
 	}
 
 	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain, a.allowUnqualified)
