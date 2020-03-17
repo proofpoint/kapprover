@@ -13,13 +13,14 @@ import (
 
 func TestGetNamesForPodAndNamespace(t *testing.T) {
 	for _, testcase := range []struct {
-		name           string
-		clusterDomain  string
-		setupPod       func(pod *v1.Pod)
-		objects        []runtime.Object
-		expectDnsnames []string
-		expectIps      []string
-		expectErr      string
+		name             string
+		clusterDomain    string
+		setupPod         func(pod *v1.Pod)
+		objects          []runtime.Object
+		expectDnsnames   []string
+		expectIps        []string
+		expectErr        string
+		allowUnqualified bool
 	}{
 		{
 			name:           "Basic",
@@ -210,7 +211,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				testcase.setupPod(&pod)
 			}
 			client := fake.NewSimpleClientset(testcase.objects...)
-			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain, false)
+			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain, testcase.allowUnqualified)
 
 			assert.Subset(t, testcase.expectDnsnames, dnsnames, "Dnsnames contains all expected values")
 			assert.Subset(t, dnsnames, testcase.expectDnsnames, dnsnames, "All values in dnsnames are expected")
