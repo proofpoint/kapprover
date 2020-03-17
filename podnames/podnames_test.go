@@ -46,6 +46,20 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectIps: []string{"172.1.0.3"},
 		},
 		{
+			name: "headless with allowUnqualified",
+			setupPod: func(pod *v1.Pod) {
+				pod.Spec.Hostname = "somehostname"
+				pod.Spec.Subdomain = "somesubdomain"
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"somehostname.somesubdomain.somenamespace.svc.cluster.local",
+				"somehostname.somesubdomain.somenamespace.svc",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3"},
+		},
+		{
 			name: "Hostnameonly",
 			setupPod: func(pod *v1.Pod) {
 				pod.Spec.Hostname = "somehostname"
@@ -71,6 +85,19 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				"tls-service.somenamespace.svc.cluster.local",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
+		},
+		{
+			name: "Service with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
 		{
 			name: "WrongServiceNamespace",
@@ -115,6 +142,20 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
 		{
+			name:          "ServiceClusterdomain with allowUnqualified",
+			clusterDomain: "somedomain.invalid",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.somedomain.invalid",
+				"tls-service.somenamespace.svc.somedomain.invalid",
+				"tls-service.somenamespace.svc",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
+		},
+		{
 			name: "ServiceClusterIp",
 			objects: []runtime.Object{
 				makeService(func(service *v1.Service) {
@@ -126,6 +167,21 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				"tls-service.somenamespace.svc.cluster.local",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
+		},
+		{
+			name: "ServiceClusterIp with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {
+					service.Spec.Type = v1.ServiceTypeClusterIP
+				}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
 		{
 			name: "ServiceNodePort",
@@ -141,6 +197,21 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectIps: []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
 		},
 		{
+			name: "ServiceNodePort with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {
+					service.Spec.Type = v1.ServiceTypeNodePort
+				}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.0.0.1", "10.1.2.3", "10.1.2.4"},
+		},
+		{
 			name: "ServiceExternalName",
 			objects: []runtime.Object{
 				makeService(func(service *v1.Service) {
@@ -153,6 +224,22 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				"someexternalname.somedomain.invalid",
 			},
 			expectIps: []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
+		},
+		{
+			name: "ServiceExternalName with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {
+					service.Spec.Type = v1.ServiceTypeExternalName
+				}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
+				"someexternalname.somedomain.invalid",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
 		},
 		{
 			name: "ServiceExternalNameNoName",
@@ -170,6 +257,23 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectIps: []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
 		},
 		{
+			name: "ServiceExternalNameNoName with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {
+					service.Spec.Type = v1.ServiceTypeExternalName
+					service.Spec.ExternalName = ""
+				}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
+				"someexternalname.somedomain.invalid",
+			},
+			allowUnqualified: true,
+			expectIps:        []string{"172.1.0.3", "10.1.2.3", "10.1.2.4"},
+		},
+		{
 			name: "ServiceNoExternalIps",
 			objects: []runtime.Object{
 				makeService(func(service *v1.Service) {
@@ -179,6 +283,20 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 			expectDnsnames: []string{
 				"172-1-0-3.somenamespace.pod.cluster.local",
 				"tls-service.somenamespace.svc.cluster.local",
+			},
+			expectIps: []string{"172.1.0.3", "10.0.0.1"},
+		},
+		{
+			name: "ServiceNoExternalIps with allowUnqualified",
+			objects: []runtime.Object{
+				makeService(func(service *v1.Service) {
+					service.Spec.ExternalIPs = nil
+				}),
+			},
+			expectDnsnames: []string{
+				"172-1-0-3.somenamespace.pod.cluster.local",
+				"tls-service.somenamespace.svc.cluster.local",
+				"tls-service.somenamespace.svc",
 			},
 			expectIps: []string{"172.1.0.3", "10.0.0.1"},
 		},
