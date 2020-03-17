@@ -17,6 +17,10 @@ import (
 
 func init() {
 	inspectors.Register("altnamesforpod", &altnamesforpod{clusterDomain: "cluster.local"})
+	inspectors.Register("altnamesforpodallowunqualified", &altnamesforpod{
+		clusterDomain:    "cluster.local",
+		allowUnqualified: true,
+	})
 }
 
 // AltNamesForPod is an Inspector that verifies all the Subject Alt Names in the CSR are appropriate
