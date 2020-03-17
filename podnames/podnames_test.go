@@ -210,7 +210,7 @@ func TestGetNamesForPodAndNamespace(t *testing.T) {
 				testcase.setupPod(&pod)
 			}
 			client := fake.NewSimpleClientset(testcase.objects...)
-			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain)
+			dnsnames, ips, err := podnames.GetNamesForPod(client, pod, clusterDomain, false)
 
 			assert.Subset(t, testcase.expectDnsnames, dnsnames, "Dnsnames contains all expected values")
 			assert.Subset(t, dnsnames, testcase.expectDnsnames, dnsnames, "All values in dnsnames are expected")

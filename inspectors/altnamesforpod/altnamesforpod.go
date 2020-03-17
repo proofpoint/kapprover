@@ -78,7 +78,7 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 		}
 	}
 
-	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain)
+	permittedDnsnames, permittedIps, err := podnames.GetNamesForPod(client, filtered[0], a.clusterDomain, a.allowUnqualified)
 	if err != nil {
 		return "", err
 	}
