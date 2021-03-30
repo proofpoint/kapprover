@@ -1,6 +1,7 @@
 package podnames
 
 import (
+	"context"
 	"fmt"
 	"k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +27,7 @@ func GetNamesForPod(client kubernetes.Interface, pod v1.Pod, clusterDomain strin
 
 	podLabels := labels.Set(pod.Labels)
 
-	serviceList, err := client.CoreV1().Services(pod.Namespace).List(metaV1.ListOptions{})
+	serviceList, err := client.CoreV1().Services(pod.Namespace).List(context.TODO(), metaV1.ListOptions{})
 	if err != nil {
 		return nil, nil, err
 	}

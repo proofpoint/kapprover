@@ -23,7 +23,7 @@ var keyUsages = []struct {
 }{
 	{certificates.UsageSigning, false},
 	{certificates.UsageDigitalSignature, true},
-	{certificates.UsageContentCommittment, false},
+	{certificates.UsageContentCommitment, false},
 	{certificates.UsageKeyEncipherment, true},
 	{certificates.UsageKeyAgreement, false},
 	{certificates.UsageDataEncipherment, false},
@@ -43,7 +43,7 @@ var keyUsages = []struct {
 	{certificates.UsageTimestamping, false},
 	{certificates.UsageOCSPSigning, false},
 	{certificates.UsageMicrosoftSGC, false},
-	{certificates.UsageNetscapSGC, false},
+	{certificates.UsageNetscapeSGC, false},
 }
 
 func TestInspect(t *testing.T) {

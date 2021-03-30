@@ -1,6 +1,7 @@
 package altnamesforpod
 
 import (
+	"context"
 	"encoding/asn1"
 	"fmt"
 	"github.com/proofpoint/kapprover/csr"
@@ -52,7 +53,7 @@ func (a *altnamesforpod) Inspect(client kubernetes.Interface, request *certifica
 		return msg, nil
 	}
 
-	podList, err := client.CoreV1().Pods(namespace).List(metaV1.ListOptions{FieldSelector: "status.podIP=" + podIp})
+	podList, err := client.CoreV1().Pods(namespace).List(context.TODO(), metaV1.ListOptions{FieldSelector: "status.podIP=" + podIp})
 	if err != nil {
 		return "", err
 	}
