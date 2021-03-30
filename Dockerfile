@@ -1,7 +1,8 @@
 FROM       golang:1.15.6
-ADD        . /go/src/github.com/proofpoint/kapprover
-RUN        go install github.com/proofpoint/kapprover/cmd/kapprover && \
-           go test github.com/proofpoint/kapprover/...
+WORKDIR    /go/src/github.com/proofpoint/kapprover
+ADD        . .
+RUN        go install -mod vendor -a ./cmd/kapprover && \
+           go test -mod vendor ./...
 
 FROM gcr.io/distroless/base-debian10
 
