@@ -1,6 +1,7 @@
 package kapprover
 
 import (
+	"context"
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -181,11 +182,11 @@ func tryApprove(filters inspectors.Inspectors, deniers inspectors.Inspectors, wa
 
 		// Submit the updated CSR.
 		signingRequestInterface := client.CertificatesV1beta1().CertificateSigningRequests()
-		if _, err := signingRequestInterface.UpdateApproval(request); err != nil {
+		if _, err := signingRequestInterface.UpdateApproval(context.TODO(), request, metaV1.UpdateOptions{}); err != nil {
 			if strings.Contains(err.Error(), "the object has been modified") {
 				// The CSR might have been updated by a third-party, retry until we
 				// succeed.
-				request, err = signingRequestInterface.Get(request.ObjectMeta.Name, metaV1.GetOptions{})
+				request, err = signingRequestInterface.Get(context.TODO(), request.ObjectMeta.Name, metaV1.GetOptions{})
 				if err != nil {
 					return err
 				}
@@ -221,7 +222,7 @@ func scheduleDelete(deleteAfter time.Duration, client *kubernetes.Clientset, req
 	}
 
 	time.AfterFunc(deleteAfter, func() {
-		err := client.CertificatesV1beta1().CertificateSigningRequests().Delete(requestName, &metaV1.DeleteOptions{})
+		err := client.CertificatesV1beta1().CertificateSigningRequests().Delete(context.TODO(), requestName, metaV1.DeleteOptions{})
 		if err == nil {
 			log.Infof("Deleted request %q", requestName)
 		} else {

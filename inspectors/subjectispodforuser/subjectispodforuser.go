@@ -1,14 +1,15 @@
 package subjectispodforuser
 
 import (
+	"context"
 	"fmt"
 	"github.com/proofpoint/kapprover/csr"
 	"github.com/proofpoint/kapprover/inspectors"
+	"github.com/sirupsen/logrus"
 	certificates "k8s.io/api/certificates/v1beta1"
+	"k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
 )
 
 func init() {
@@ -39,7 +40,7 @@ func (s *subjectispodforuser) Inspect(client kubernetes.Interface, request *cert
 		return msg, nil
 	}
 
-	podList, err := client.CoreV1().Pods(namespace).List(metaV1.ListOptions{FieldSelector: "status.podIP=" + podIp})
+	podList, err := client.CoreV1().Pods(namespace).List(context.TODO(), metaV1.ListOptions{FieldSelector: "status.podIP=" + podIp})
 	if err != nil {
 		return "", err
 	}
