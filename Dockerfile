@@ -4,7 +4,7 @@ ADD        . .
 RUN        go install -mod vendor -a ./cmd/kapprover && \
            go test -mod vendor ./...
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/base-debian10:nonroot
 
 COPY --from=0 /go/bin/kapprover .
 ENTRYPOINT ["/kapprover"]
