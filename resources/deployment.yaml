@@ -20,7 +20,6 @@ spec:
       containers:
       - name: tls-approver
         image: proofpoint/kapprover:v0.14.0
-        imagePullPolicy: Always
         ports:
         - containerPort: 8081
           protocol: TCP
@@ -40,3 +39,9 @@ spec:
           limits:
             cpu: 100m
             memory: 50Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - all
+          runAsNonRoot: true
