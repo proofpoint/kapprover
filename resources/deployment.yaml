@@ -19,8 +19,7 @@ spec:
       serviceAccountName: kapprover
       containers:
       - name: tls-approver
-        image: proofpoint/kapprover:0.7.0
-        imagePullPolicy: Always
+        image: proofpoint/kapprover:v0.14.0
         ports:
         - containerPort: 8081
           protocol: TCP
@@ -40,3 +39,9 @@ spec:
           limits:
             cpu: 100m
             memory: 50Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - all
+          runAsNonRoot: true
